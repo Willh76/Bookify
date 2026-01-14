@@ -71,6 +71,16 @@ Design principles include:
 - Returns a descriptive result item of success or an error with a code showing which business rule was broken
 
 ## Application Layer
+### CQRS (Command Query Responsibility Segregation)
+- Seperate writing and reading data into seperate objects
+- Single responsibility is followed
+- Improves testability
+- Having only a handle method helps with interface segregation
+- Decorator patterns can be used for cross cutting concerns
+- Loose coupling
+- Can cause indirection
+
+<img width="1092" height="885" alt="image" src="https://github.com/user-attachments/assets/6c3a69b3-750c-458c-a97f-0ef9010eec1f" />
 
 
 ## Infrastructure Layer
