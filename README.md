@@ -26,6 +26,7 @@ Design principles include:
   - init on the setter of ID so it cannot be changed
 - Value Objects for Solving Primitive Obsession
   - Begins to build rich domain model
+  - Shared can be moved into shared folder (Money)
   - Add a record to represent your value object
     - Allows structural equality
   - Replace strings
@@ -54,13 +55,15 @@ Design principles include:
 - Can be subscribed to to trigger events such as email users
   
 ### Repositories and Unit of Work
--Required for a rich domain model
+- Required for a rich domain model
 - Repository pattern can be used for adding an entity to the repository
   - Sits inside the entity folder
 - Unit of work is used for persisting the entity
   - Sits inside abstractions
     
 ### Domain Service
+- For where calculations/methods don't belong on your entities
+
 
 ### Double Dispatch
 
