@@ -52,9 +52,14 @@ Design principles include:
   - Takes an ID from the entity   
 - Raise event from your static pattern
 - Can be subscribed to to trigger events such as email users
-- 
+  
 ### Repositories and Unit of Work
-
+-Required for a rich domain model
+- Repository pattern can be used for adding an entity to the repository
+  - Sits inside the entity folder
+- Unit of work is used for persisting the entity
+  - Sits inside abstractions
+    
 ### Domain Service
 
 ### Double Dispatch
