@@ -64,12 +64,11 @@ Design principles include:
 ### Domain Service
 - For where calculations/methods don't belong on your entities
 
-
-### Double Dispatch
-
-### Result Class
-
-### Domain Errors
+### Result and Error Classes
+- Result and error classes made in abstractions folder
+- Allows for a defensive design
+- Removes checks from the application layer and shifts them into the domain within our entities
+- Returns a descriptive result item of success or an error with a code showing which business rule was broken
 
 ## Application Layer
 
