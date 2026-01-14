@@ -82,6 +82,9 @@ Design principles include:
 
 <img width="1092" height="885" alt="image" src="https://github.com/user-attachments/assets/6c3a69b3-750c-458c-a97f-0ef9010eec1f" />
 
+### Queries
+- IQuery Enforces a type of result to have either success or failure
+
 
 ## Infrastructure Layer
 
