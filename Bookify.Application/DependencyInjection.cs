@@ -1,8 +1,5 @@
 ﻿using Bookify.Domain.Bookings;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bookify.Application
 {
