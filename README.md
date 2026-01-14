@@ -35,6 +35,13 @@ Design principles include:
 - Private setters are used as properties should not be changable outside of the scope of the model
 
 ### Static Factory Pattern
+- Make constructor private
+- Make a static factory for creating entity
+- Call the constructor from the static factory
+- Create Id in the factory
+- Hides constructor which may not want to be exposed
+- Increased encapsulation
+- Allows the implementation of Domain events
 
 ### Domain Events
 
