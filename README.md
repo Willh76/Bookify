@@ -44,7 +44,15 @@ Design principles include:
 - Allows the implementation of Domain events
 
 ### Domain Events
-
+- Implement with MediatR.Contracts
+- INotification interface implemented
+  - Pubish notifications to the domain
+- Update Entity class to Read, clear and Raise domain events
+- Events folder to hold the events in records
+  - Takes an ID from the entity   
+- Raise event from your static pattern
+- Can be subscribed to to trigger events such as email users
+- 
 ### Repositories and Unit of Work
 
 ### Domain Service
