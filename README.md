@@ -14,6 +14,7 @@ Design principles include:
 - Bounded contexts - group related contexts together
   
 ## Domain Layer
+### Domain Entities
 - Folder per Entity
   - Better represents what is in the folder
 - Make entities sealed if they are not being inherited from
@@ -23,11 +24,29 @@ Design principles include:
   - It should be continuous
 - Abstract class for entity (can only inherit from)
   - init on the setter of ID so it cannot be changed
-### Value Objects for Solving Primitive Obsession
-
-### Private setters
+- Value Objects for Solving Primitive Obsession
+  - Begins to build rich domain model
+  - Add a record to represent your value object
+    - Allows structural equality
+  - Replace strings
+  - Can create lists of items such as currencies
+    - Define methods to get currencies or to sum currencies
+    - Devine an internal currency that cannot be accessed out of domain for None
+- Private setters are used as properties should not be changable outside of the scope of the model
 
 ### Static Factory Pattern
+
+### Domain Events
+
+### Repositories and Unit of Work
+
+### Domain Service
+
+### Double Dispatch
+
+### Result Class
+
+### Domain Errors
 
 ## Application Layer
 
