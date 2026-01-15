@@ -7,7 +7,7 @@ namespace Bookify.Domain.Bookings
 {
     public interface IBookingRepository
     {
-        Task<Apartment?> GetByIDAsync(
+        Task<Booking?> GetByIDAsync(
             Guid id,
             CancellationToken cancellationToken = default);
 
