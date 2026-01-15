@@ -17,6 +17,10 @@ namespace Bookify.Domain.Bookings
 
         public static Error NotReserved = new(
             "Booking.NotReserved",
+            "The booking is not reserved");
+
+        public static Error NotPending = new(
+            "Booking.NotReserved",
             "The booking is not pending");
 
         public static Error NotConfirmed = new(
