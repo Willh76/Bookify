@@ -38,12 +38,12 @@ namespace Bookify.Application.Bookings.ReserveBooking
 
         public async Task<Result<Guid>> Handle(ReserveBookingCommand request, CancellationToken cancellationToken)
         {
-            User? user = await _userRepository.GetByIDAsync(request.UserId, cancellationToken);
+            User? user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
 
             if (user is null)
                 return Result.Failure<Guid>(UserErrors.NotFound);
 
-            Apartment? apartment = await _apartmentRepository.GetByIDAsync(request.ApartmentId, cancellationToken);
+            Apartment? apartment = await _apartmentRepository.GetByIdAsync(request.ApartmentId, cancellationToken);
 
             if (apartment is null)
                 return Result.Failure<Guid>(ApartmentErrors.NotFound);
