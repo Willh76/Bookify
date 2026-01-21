@@ -1,7 +1,4 @@
 ﻿using Bookify.Application.Abstractions.Clock;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bookify.Infrastructure.Clock
 {

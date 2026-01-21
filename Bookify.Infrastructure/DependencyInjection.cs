@@ -2,12 +2,9 @@
 using Bookify.Application.Abstractions.Email;
 using Bookify.Infrastructure.Clock;
 using Bookify.Infrastructure.Email;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bookify.Infrastructure
 {
@@ -20,6 +17,16 @@ namespace Bookify.Infrastructure
             services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 
             services.AddTransient<IEmailService, EmailService>();
+
+            string connectionString =
+                configuration.GetConnectionString("Database") ??
+                throw new ArgumentNullException(nameof(configuration));
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseNpgsql(connectionString)
+                .UseSnakeCaseNamingConvention();
+            });
 
             return services;
         }
