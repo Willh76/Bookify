@@ -7,12 +7,12 @@
         public static readonly Currency Eur = new("EUR");
         public static readonly Currency Usd = new("USD");
 
-        private Currency(string currencyCode) => CurrencyCode = currencyCode;
-        public string CurrencyCode { get; init; }
+        private Currency(string currencyCode) => Code = currencyCode;
+        public string Code { get; init; }
 
         public static Currency FromCode(string code)
         {
-            return All.FirstOrDefault(c => c.CurrencyCode == code) ??
+            return All.FirstOrDefault(c => c.Code == code) ??
                 throw new ApplicationException("The currency code is invalid");
         }
 
