@@ -108,7 +108,7 @@ namespace Bookify.Domain.Bookings
             Status = BookingStatus.Completed;
             CompletedOnUtc = utcNow;
 
-            RaiseDomainEvent(new BookingCompleteDomainEvent(Id));
+            RaiseDomainEvent(new BookingCompletedDomainEvent(Id));
 
             return Result.Success();
         }

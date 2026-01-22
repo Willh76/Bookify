@@ -11,7 +11,7 @@ namespace Bookify.Domain.Bookings
         }
 
         public DateOnly Start { get; init; }
-        public DateOnly End{ get; init; }
+        public DateOnly End { get; init; }
 
         public int LengthInDays => End.DayNumber - Start.DayNumber;
 
@@ -21,9 +21,10 @@ namespace Bookify.Domain.Bookings
                 throw new ApplicationException("End date precedes start date");
 
             return new DateRange
-            { 
+            {
                 Start = start,
-                End = end 
+                End = end
             };
+        }
     }
 }
