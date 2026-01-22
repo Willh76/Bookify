@@ -50,3 +50,4 @@ namespace Bookify.Infrastructure.Configurations
                 .HasForeignKey(booking => booking.UserId);
         }
     }
+}
