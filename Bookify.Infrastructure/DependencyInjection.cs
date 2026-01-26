@@ -81,6 +81,10 @@ namespace Bookify.Infrastructure
                 httpClient.BaseAddress = new Uri(keyCloakOptions.TokenUrl);
             });
 
+            services.AddHttpContextAccessor();
+
+            services.AddScoped<IUserContext, UserContext>();
+
             #endregion
 
             return services;
