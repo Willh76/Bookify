@@ -25,7 +25,7 @@ namespace Bookify.Application.Users.RegisterUser
             RegisterUserCommand request,
             CancellationToken cancellationToken)
         {
-            var user = User.Create(
+            User user = User.Create(
                 new FirstName(request.FirstName),
                 new Surname(request.Surname),
                 new Email(request.Email));

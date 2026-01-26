@@ -14,7 +14,7 @@ namespace Bookify.Api.Extensions
             var sqlConnectionFactory = scope.ServiceProvider.GetRequiredService<ISqlConnectionFactory>();
             using var connection = sqlConnectionFactory.CreateConnection();
 
-            var faker = new Faker();
+            Faker faker = new Faker();
 
             List<object> apartments = new();
             for (var i = 0; i < 100; i++)

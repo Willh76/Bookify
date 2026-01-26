@@ -21,7 +21,7 @@ namespace Bookify.Infrastructure.Authentication
             string password,
             CancellationToken cancellationToken = default)
         {
-            var userRepresentationModel = UserRepresentationModel.FromUser(user);
+            UserRepresentationModel userRepresentationModel = UserRepresentationModel.FromUser(user);
 
             userRepresentationModel.Credentials = new CredentialRepresentationModel[]
             {
@@ -33,7 +33,7 @@ namespace Bookify.Infrastructure.Authentication
             }
             };
 
-            var response = await _httpClient.PostAsJsonAsync(
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(
                 "users",
                 userRepresentationModel,
                 cancellationToken);

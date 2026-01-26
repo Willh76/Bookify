@@ -21,13 +21,13 @@ namespace Bookify.Infrastructure.Authentication.Models
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            var authorisationToken = await GetAuthorisationToken(cancellationToken);
+            AuthorisationToken authorisationToken = await GetAuthorisationToken(cancellationToken);
 
             request.Headers.Authorization = new AuthenticationHeaderValue(
                 JwtBearerDefaults.AuthenticationScheme,
                 authorisationToken.AccessToken);
 
-            var httpResponseMessage = await base.SendAsync(request, cancellationToken);
+            HttpResponseMessage httpResponseMessage = await base.SendAsync(request, cancellationToken);
 
             httpResponseMessage.EnsureSuccessStatusCode();
 
@@ -36,7 +36,7 @@ namespace Bookify.Infrastructure.Authentication.Models
 
         private async Task<AuthorisationToken> GetAuthorisationToken(CancellationToken cancellationToken)
         {
-            var authorisationRequestParameters = new KeyValuePair<string, string>[]
+            KeyValuePair<string, string>[] authorisationRequestParameters = new KeyValuePair<string, string>[]
             {
             new("client_id", _keycloakOptions.AdminClientId),
             new("client_secret", _keycloakOptions.AdminClientSecret),
@@ -44,16 +44,16 @@ namespace Bookify.Infrastructure.Authentication.Models
             new("grant_type", "client_credentials")
             };
 
-            var authorisationRequestContent = new FormUrlEncodedContent(authorisationRequestParameters);
+            FormUrlEncodedContent authorisationRequestContent = new FormUrlEncodedContent(authorisationRequestParameters);
 
-            var authorisationRequest = new HttpRequestMessage(
+            HttpRequestMessage authorisationRequest = new HttpRequestMessage(
                 HttpMethod.Post,
                 new Uri(_keycloakOptions.TokenUrl))
             {
                 Content = authorisationRequestContent
             };
 
-            var authorisationResponse = await base.SendAsync(authorisationRequest, cancellationToken);
+            HttpResponseMessage authorisationResponse = await base.SendAsync(authorisationRequest, cancellationToken);
 
             authorisationResponse.EnsureSuccessStatusCode();
             return await authorisationResponse.Content.ReadFromJsonAsync<AuthorisationToken>(cancellationToken) ??

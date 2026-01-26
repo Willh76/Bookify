@@ -26,7 +26,7 @@ namespace Bookify.Application.Abstractions.Behaviours
 
             ValidationContext<TRequest> context = new ValidationContext<TRequest>(request);
 
-            var validationErrors = _validators
+            List<ValidationError> validationErrors = _validators
                 .Select(validator => validator.Validate(context))
                 .Where(validationResult  => validationResult.Errors.Any())
                 .SelectMany(validationResult => validationResult.Errors)

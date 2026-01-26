@@ -33,7 +33,7 @@ namespace Bookify.Api.Controllers.Bookings
             ReserveBookingRequest request,
             CancellationToken cancellationToken)
         {
-            var command = new ReserveBookingCommand(
+            ReserveBookingCommand command = new ReserveBookingCommand(
                 request.ApartmentId,
                 request.UserId,
                 request.StartDate,

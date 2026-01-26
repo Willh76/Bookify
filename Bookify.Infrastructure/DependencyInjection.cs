@@ -53,9 +53,10 @@ namespace Bookify.Infrastructure
             SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
             #endregion
 
+            #region Add Authentication
             services
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer();
+                    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer();
 
             services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
 
@@ -72,6 +73,15 @@ namespace Bookify.Infrastructure
                 httpClient.BaseAddress = new Uri(keyCloakOptions.AdminUrl);
             })
                 .AddHttpMessageHandler<AdminAuthorisationDelegatingHandler>();
+
+            services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpClient) =>
+            {
+                KeycloakOptions keyCloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+
+                httpClient.BaseAddress = new Uri(keyCloakOptions.TokenUrl);
+            });
+
+            #endregion
 
             return services;
         }

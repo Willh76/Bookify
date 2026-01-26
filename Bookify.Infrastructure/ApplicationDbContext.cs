@@ -54,7 +54,7 @@ namespace Bookify.Infrastructure
                 })
                 .ToList();
 
-            foreach (var domainEvent in domainEvents)
+            foreach (IDomainEvent domainEvent in domainEvents)
             {
                 await _publisher.Publish(domainEvent);
             }
