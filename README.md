@@ -96,7 +96,17 @@ Design principles include:
 
 
 ## Authorization
+### Role Based Authorization
+Access is determined by the role assigned to a user
+Each role has a predefined set of permissions. If a user has a role, they automatically inherit all the permissions associated with that role.
 
+### Permission Based Authorization
+Access is granted based on individual permissions rather than roles.
+Users (or roles) are assigned specific permissions, often very granular.
+
+### Resource Based Authorization
+Access decisions are made based on the specific resource being accessed and the user’s relationship to that resource.
+Authorization checks occur at the object/resource level using Id to check if the user created the booking
 
 ## Advanced Topics
 
