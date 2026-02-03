@@ -111,7 +111,17 @@ Authorization checks occur at the object/resource level using Id to check if the
 
 # Advanced Topics
 ## Logging
+Configure Serilog sinks + enrichment
+- Sends logs to Console and Seq.
+- Adds contextual metadata: correlation ID, machine name, thread ID.
+- Sets sensible log levels.
 
+Adds correlation ID logging middleware
+- Extracts X-Correlation-Id from request headers.
+- Falls back to TraceIdentifier if none provided.
+- Pushes the correlation ID into Serilog’s log context.
+- Ensures every log during a request includes that ID.
+  
 ## Caching
 
 ## Health Checks
