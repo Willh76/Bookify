@@ -1,4 +1,4 @@
-## Introduction
+# Introduction
 Notes from a course on pragmatic clean architecture
 
 Learning architectural best practices will help to improve maintainability and testability and reducing loose coupling. It enforces this through good design.
@@ -12,7 +12,8 @@ Design principles include:
 - DRY - Don't Repeat Yourself, reduce duplication of code by encapsulating
 - Persistence ignorence - Domain should domain such that it doesn't matter where you persist your entities
 - Bounded contexts - group related contexts together
-  
+
+# Architecture Layers
 ## Domain Layer
 ### Domain Entities
 - Folder per Entity
@@ -85,15 +86,15 @@ Design principles include:
 ### Queries
 - IQuery Enforces a type of result to have either success or failure
 
-
 ## Infrastructure Layer
-
 
 ## Presentation Layer
 
+# Authentication and Authorization
+Authentication verifies who you are, while authorization determines what you’re allowed to do.
 
 ## Authentication
-
+Authentication is the process of verifying who a user is.
 
 ## Authorization
 ### Role Based Authorization
@@ -108,10 +109,26 @@ Users (or roles) are assigned specific permissions, often very granular.
 Access decisions are made based on the specific resource being accessed and the user’s relationship to that resource.
 Authorization checks occur at the object/resource level using Id to check if the user created the booking
 
-## Advanced Topics
+# Advanced Topics
+## Logging
 
+## Caching
 
-## Testing
+## Health Checks
 
+## API Versioning
 
-## Other Notes
+## Transactional Outbox Pattern
+
+## Minimal APIs
+
+# Testing
+## Domain Layer Unit Testing
+
+## Application Layer Unit Testing
+
+## Integration Testing
+
+## Functional Testing
+
+## Architecture Testing
