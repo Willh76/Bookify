@@ -1,4 +1,5 @@
 ﻿using Bookify.Application.Abstractions.Authentication;
+using Bookify.Application.Abstractions.Caching;
 using Bookify.Application.Abstractions.Clock;
 using Bookify.Application.Abstractions.Data;
 using Bookify.Application.Abstractions.Email;
@@ -9,6 +10,7 @@ using Bookify.Domain.Users;
 using Bookify.Infrastructure.Authentication;
 using Bookify.Infrastructure.Authentication.Models;
 using Bookify.Infrastructure.Authorization;
+using Bookify.Infrastructure.Caching;
 using Bookify.Infrastructure.Clock;
 using Bookify.Infrastructure.Data;
 using Bookify.Infrastructure.Email;
@@ -37,10 +39,31 @@ namespace Bookify.Infrastructure
 
             services.AddTransient<IEmailService, EmailService>();
 
-            #region Add Persistence
-            string connectionString =
-                   configuration.GetConnectionString("Database") ??
-                   throw new ArgumentNullException(nameof(configuration));
+            AddPersistence(services, configuration);
+
+            AddAuthentication(services, configuration);
+
+            AddAuthorization(services);
+
+            AddCaching(services, configuration);
+
+            return services;
+        }
+
+        private static void AddCaching(IServiceCollection services, IConfiguration configuration)
+        {
+            var connectionString = configuration.GetConnectionString("Cache") ??
+                            throw new ArgumentNullException(nameof(configuration));
+
+            services.AddStackExchangeRedisCache(options => options.Configuration = connectionString);
+
+            services.AddSingleton<ICacheService, CacheService>();
+        }
+
+        private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
+        {
+            string connectionString = configuration.GetConnectionString("Database") ??
+                throw new ArgumentNullException(nameof(configuration));
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -57,12 +80,24 @@ namespace Bookify.Infrastructure
             services.AddSingleton<ISqlConnectionFactory>(_ => new SqlConnectionFactory(connectionString));
 
             SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
-            #endregion
+        }
 
-            #region Add Authentication
+        private static void AddAuthorization(IServiceCollection services)
+        {
+            services.AddScoped<AuthorizationService>();
+
+            services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
+
+            services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+            services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+        }
+
+        private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
+        {
             services
-                    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddJwtBearer();
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer();
 
             services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
 
@@ -90,20 +125,6 @@ namespace Bookify.Infrastructure
             services.AddHttpContextAccessor();
 
             services.AddScoped<IUserContext, UserContext>();
-
-            #endregion
-
-            #region Add Authorization
-            services.AddScoped<AuthorizationService>();
-
-            services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>(); 
-
-            services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
-            
-            services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
-            #endregion
-
-            return services;
         }
     }
 }
