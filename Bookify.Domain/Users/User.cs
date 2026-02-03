@@ -1,8 +1,5 @@
 ﻿using Bookify.Domain.Abstractions;
 using Bookify.Domain.Users.Events;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bookify.Domain.Users
 {
