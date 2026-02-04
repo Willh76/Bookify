@@ -123,8 +123,10 @@ Adds correlation ID logging middleware
 - Ensures every log during a request includes that ID.
   
 ## Caching
+Caching with Redis provides a fast, reliable way to store frequently accessed data in memory, reducing load on backend services and databases. In systems that manage authentication and authorization, Redis is often used to cache roles, permissions, and user access rules so applications can validate a user’s rights without repeatedly querying a slower relational database or identity provider. This dramatically improves request performance and reduces latency for secured endpoints. Redis can also cache query results—such as precomputed views, filtered lists, or expensive lookup operations—allowing the application to respond quickly while offloading read pressure from the underlying data stores. By storing these values with appropriate expiration policies and invalidating them when changes occur (like role updates or permission modifications), Redis helps maintain consistency while ensuring that the system remains highly responsive and scalable.
 
 ## Health Checks
+Health checks provide a simple and standardised way to monitor the status of an application and its dependencies, such as databases, external APIs, message queues, or file storage. By exposing a dedicated endpoint, the application can report whether it is healthy, degraded, or unhealthy. This makes health checks extremely useful to determine when to route traffic or restart failing services. Ultimately, health checks help improve application reliability, reduce downtime, and enable faster diagnosis of issues in production environments.
 
 ## API Versioning
 
