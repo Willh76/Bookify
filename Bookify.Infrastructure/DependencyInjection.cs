@@ -46,8 +46,18 @@ namespace Bookify.Infrastructure
             AddAuthorization(services);
 
             AddCaching(services, configuration);
+           
+            AddHealthChecks(services, configuration);
 
             return services;
+        }
+
+        private static void AddHealthChecks(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddHealthChecks()
+                .AddNpgSql(configuration.GetConnectionString("Database")!)
+                .AddRedis(configuration.GetConnectionString("Cache")!)
+                .AddUrlGroup(new Uri(configuration["KeyCloak:BaseUrl"]!), HttpMethod.Get, "keycloak");
         }
 
         private static void AddCaching(IServiceCollection services, IConfiguration configuration)

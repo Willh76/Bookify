@@ -1,7 +1,13 @@
 using Bookify.Api.Extensions;
 using Bookify.Application;
+using Bookify.Application.Abstractions.Data;
 using Bookify.Infrastructure;
+using Dapper;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +21,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddHealthChecks();
+
 //https://localhost:5001/swagger/index.html
 var app = builder.Build();
 
@@ -39,5 +48,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.Run();
