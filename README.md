@@ -129,6 +129,16 @@ Caching with Redis provides a fast, reliable way to store frequently accessed da
 Health checks provide a simple and standardised way to monitor the status of an application and its dependencies, such as databases, external APIs, message queues, or file storage. By exposing a dedicated endpoint, the application can report whether it is healthy, degraded, or unhealthy. This makes health checks extremely useful to determine when to route traffic or restart failing services. Ultimately, health checks help improve application reliability, reduce downtime, and enable faster diagnosis of issues in production environments.
 
 ## API Versioning
+API versioning ensures that changes to an API—especially breaking changes, such as altered request/response formats, removed fields, behavioural changes, or modified validation rules—can be introduced without disrupting existing clients. When an API evolves, new versions allow older integrations to continue functioning while newer consumers adopt the updated contract. In .NET, API versioning helps maintain backward compatibility, simplifies migration, and provides a clear lifecycle for deprecating old endpoints.
+
+### Query parameter
+Versioning via query parameters places the version directly in the URL’s query string, such as ?api-version=2.0. This approach is easy to implement, visible to consumers, and works well when versioning needs to be flexible without altering route structures. While simple, it can be less REST‑friendly because it mixes resource identification with metadata.
+
+### Header
+Header-based versioning uses a custom or standard header (e.g. api-version: 2.0 or Accept: application/json; version=2.0). This keeps URLs clean and aligns better with REST principles by separating versioning from resource paths. It also provides more flexibility for content negotiation, though it can be less discoverable for developers inspecting requests manually.
+
+### URL
+Versioning via the URL path embeds the version directly into the route, such as /api/v2/orders. This is the most common and most easily discoverable approach. It makes versioning explicit and simple to manage across multiple endpoints, but it can lead to route duplication when many endpoints must be versioned simultaneously.
 
 ## Transactional Outbox Pattern
 
