@@ -97,7 +97,7 @@ Logging
 Health Checks
 
 ## Presentation Layer
-
+The Presentation layer exposes your application to users/clients . It references the Application layer and maps HTTP requests to commands/queries (CQRS).
 # Authentication and Authorization
 Authentication verifies who you are, while authorization determines what you’re allowed to do.
 
