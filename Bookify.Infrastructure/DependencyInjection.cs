@@ -1,4 +1,5 @@
-﻿using Bookify.Application.Abstractions.Authentication;
+﻿using Asp.Versioning;
+using Bookify.Application.Abstractions.Authentication;
 using Bookify.Application.Abstractions.Caching;
 using Bookify.Application.Abstractions.Clock;
 using Bookify.Application.Abstractions.Data;
@@ -46,10 +47,29 @@ namespace Bookify.Infrastructure
             AddAuthorization(services);
 
             AddCaching(services, configuration);
-           
+
             AddHealthChecks(services, configuration);
 
+            AddApiVersioning(services);
+
             return services;
+        }
+
+        private static void AddApiVersioning(IServiceCollection services)
+        {
+            services
+                .AddApiVersioning(options =>
+                {
+                    options.DefaultApiVersion = new ApiVersion(1);
+                    options.ReportApiVersions = true;
+                    options.ApiVersionReader = new UrlSegmentApiVersionReader();
+                })
+                .AddMvc()
+                .AddApiExplorer(options =>
+                {
+                    options.GroupNameFormat = "'v'V";
+                    options.SubstituteApiVersionInUrl = true;
+                });
         }
 
         private static void AddHealthChecks(IServiceCollection services, IConfiguration configuration)

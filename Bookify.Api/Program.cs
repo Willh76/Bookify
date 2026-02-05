@@ -1,13 +1,11 @@
+using Asp.Versioning.ApiExplorer;
 using Bookify.Api.Extensions;
+using Bookify.Api.OpenApi;
 using Bookify.Application;
-using Bookify.Application.Abstractions.Data;
 using Bookify.Infrastructure;
-using Dapper;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
-using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,13 +22,25 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddHealthChecks();
 
+builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
+
 //https://localhost:5001/swagger/index.html
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        IReadOnlyList<ApiVersionDescription> descriptions = app.DescribeApiVersions();
+
+        foreach (ApiVersionDescription description in descriptions)
+        {
+            var url = $"/swagger/{description.GroupName}/swagger.json";
+            var name = description.GroupName.ToUpperInvariant();
+            options.SwaggerEndpoint(url, name);
+        }
+    });
     //app.ApplyMigrations();
 
     //app.SeedData();
