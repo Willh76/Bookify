@@ -149,6 +149,7 @@ Header-based versioning uses a custom or standard header (e.g. api-version: 2.0 
 Versioning via the URL path embeds the version directly into the route, such as /api/v2/orders. This is the most common and most easily discoverable approach. It makes versioning explicit and simple to manage across multiple endpoints, but it can lead to route duplication when many endpoints must be versioned simultaneously.
 
 ## Transactional Outbox Pattern
+The Transactional Outbox Pattern ensures reliable delivery of messages or integration events when your application needs to update its own database and publish an event to an external system. Instead of sending events directly during the request workflow—which risks message loss if the app crashes mid‑publish—the outbox pattern guarantees delivery by leveraging your database transaction.
 
 ## Minimal APIs
 
