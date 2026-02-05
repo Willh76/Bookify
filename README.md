@@ -182,6 +182,10 @@ Testing domian in clean architecture is a must!
 - Can check method calls
    
 ## Integration Testing
+Test the behaviour of your system together with any external services where mocking services isn't feasible
+TestContainers creates throwaway container instances.
+Microsoft.AspNetCore.MVC allows web application factories
+Much slower than standard unit tests
 
 ## Functional Testing
 
