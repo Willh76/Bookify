@@ -87,6 +87,14 @@ Design principles include:
 - IQuery Enforces a type of result to have either success or failure
 
 ## Infrastructure Layer
+The Infrastructure layer provides implementations of your domain abstractions and cross‑cutting concerns. It references the Domain and Application layers but must not be referenced by them.
+
+### Responsibilities
+Data access, repository & unit‑of‑work implementations
+Outbox/inbox and transactional messaging
+Caching,
+Logging
+Health Checks
 
 ## Presentation Layer
 
