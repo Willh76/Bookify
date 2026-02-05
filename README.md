@@ -152,6 +152,7 @@ Versioning via the URL path embeds the version directly into the route, such as 
 The Transactional Outbox Pattern ensures reliable delivery of messages or integration events when your application needs to update its own database and publish an event to an external system. Instead of sending events directly during the request workflow—which risks message loss if the app crashes mid‑publish—the outbox pattern guarantees delivery by leveraging your database transaction.
 
 ## Minimal APIs
+A minimal API is a lightweight way of building HTTP endpoints in ASP.NET Core that focuses on simplicity and reduced boilerplate, allowing you to define routes and handlers directly in the Program.cs file without controllers, attributes, or the full MVC infrastructure. It’s ideal for microservices, small APIs, or high‑performance scenarios because it keeps the request pipeline lean. 
 
 # Testing
 ## Domain Layer Unit Testing
