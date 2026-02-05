@@ -188,5 +188,11 @@ Microsoft.AspNetCore.MVC allows web application factories
 Much slower than standard unit tests
 
 ## Functional Testing
+Tests that verify the functionality from the perspective of a client
+At least test happy paths
 
 ## Architecture Testing
+Allow you to enforce architecture and design rules
+NetArchTest.Rules allows you to check layers only see what they should be able to
+Can check all domain assemblies are sealed and end in domain event etc
+Entities should have a private parameterless constructor
