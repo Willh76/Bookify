@@ -155,10 +155,32 @@ The Transactional Outbox Pattern ensures reliable delivery of messages or integr
 A minimal API is a lightweight way of building HTTP endpoints in ASP.NET Core that focuses on simplicity and reduced boilerplate, allowing you to define routes and handlers directly in the Program.cs file without controllers, attributes, or the full MVC infrastructure. It’s ideal for microservices, small APIs, or high‑performance scenarios because it keeps the request pipeline lean. 
 
 # Testing
+- Follow the same folder structure
+- Name
+  - What is the system under test (focus on method name)
+  - What should happen
+  - What is the condition
+- Setup
+  - Arrange - Prepare moqs
+  - Act - execute test
+  - Assert - verify behaviour
+- Define data in helper classes to save setup
+- Add base tests to reduce the amount of tests you need to write
+- Aim for high coverage without sacrificing test quality
+  
 ## Domain Layer Unit Testing
+Testing domian in clean architecture is a must!
+- Test all services
+- Tests methods on entities
 
 ## Application Layer Unit Testing
-
+- More required for setup
+- Create instances of commands to be shared across
+- InternalsVisibleTo allows visibility of internal classes
+- Mock all required services (NSubstitute)
+  - Arg.Any<CancellationToken>()
+- Can check method calls
+   
 ## Integration Testing
 
 ## Functional Testing
