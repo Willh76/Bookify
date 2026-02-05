@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 
-namespace Bookify.Application.Abstractions.Data
+namespace Bookify.Application.Abstractions.Data;
+
+public interface ISqlConnectionFactory
 {
-    public interface ISqlConnectionFactory
-    {
-        IDbConnection CreateConnection();
-    }
+    IDbConnection CreateConnection();
 }

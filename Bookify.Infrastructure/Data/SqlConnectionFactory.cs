@@ -2,23 +2,22 @@
 using Npgsql;
 using System.Data;
 
-namespace Bookify.Infrastructure.Data
+namespace Bookify.Infrastructure.Data;
+
+internal sealed class SqlConnectionFactory : ISqlConnectionFactory
 {
-    internal sealed class SqlConnectionFactory : ISqlConnectionFactory
+    private readonly string _connectionString;
+
+    public SqlConnectionFactory(string connectionString)
     {
-        private readonly string _connectionString;
+        _connectionString = connectionString;
+    }
 
-        public SqlConnectionFactory(string connectionString)
-        {
-            _connectionString = connectionString;
-        }
+    public IDbConnection CreateConnection()
+    {
+        NpgsqlConnection connection = new NpgsqlConnection(_connectionString);
+        connection.Open();
 
-        public IDbConnection CreateConnection()
-        {
-            NpgsqlConnection connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
-
-            return connection;
-        }
+        return connection;
     }
 }

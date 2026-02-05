@@ -4,59 +4,58 @@ using Bookify.Domain.Abstractions;
 using Bookify.Domain.Bookings;
 using Bookify.Domain.Reviews;
 
-namespace Bookify.Application.Reviews.AddReview
+namespace Bookify.Application.Reviews.AddReview;
+
+internal sealed class AddReviewCommandHandler : ICommandHandler<AddReviewCommand>
 {
-    internal sealed class AddReviewCommandHandler : ICommandHandler<AddReviewCommand>
+    private readonly IBookingRepository _bookingRepository;
+    private readonly IReviewRepository _reviewRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IDateTimeProvider _dateTimeProvider;
+
+    public AddReviewCommandHandler(
+        IBookingRepository bookingRepository,
+        IReviewRepository reviewRepository,
+        IUnitOfWork unitOfWork,
+        IDateTimeProvider dateTimeProvider)
     {
-        private readonly IBookingRepository _bookingRepository;
-        private readonly IReviewRepository _reviewRepository;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IDateTimeProvider _dateTimeProvider;
+        _bookingRepository = bookingRepository;
+        _reviewRepository = reviewRepository;
+        _unitOfWork = unitOfWork;
+        _dateTimeProvider = dateTimeProvider;
+    }
 
-        public AddReviewCommandHandler(
-            IBookingRepository bookingRepository,
-            IReviewRepository reviewRepository,
-            IUnitOfWork unitOfWork,
-            IDateTimeProvider dateTimeProvider)
+    public async Task<Result> Handle(AddReviewCommand request, CancellationToken cancellationToken)
+    {
+        Booking? booking = await _bookingRepository.GetByIdAsync(request.BookingId, cancellationToken);
+
+        if (booking is null)
         {
-            _bookingRepository = bookingRepository;
-            _reviewRepository = reviewRepository;
-            _unitOfWork = unitOfWork;
-            _dateTimeProvider = dateTimeProvider;
+            return Result.Failure(BookingErrors.NotFound);
         }
 
-        public async Task<Result> Handle(AddReviewCommand request, CancellationToken cancellationToken)
+        Result<Rating> ratingResult = Rating.Create(request.Rating);
+
+        if (ratingResult.IsFailure)
         {
-            Booking? booking = await _bookingRepository.GetByIdAsync(request.BookingId, cancellationToken);
-
-            if (booking is null)
-            {
-                return Result.Failure(BookingErrors.NotFound);
-            }
-
-            Result<Rating> ratingResult = Rating.Create(request.Rating);
-
-            if (ratingResult.IsFailure)
-            {
-                return Result.Failure(ratingResult.Error);
-            }
-
-            Result<Review> reviewResult = Review.Create(
-                booking,
-                ratingResult.Value,
-                new Comment(request.Comment),
-                _dateTimeProvider.UtcNow);
-
-            if (reviewResult.IsFailure)
-            {
-                return Result.Failure(reviewResult.Error);
-            }
-
-            _reviewRepository.Add(reviewResult.Value);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            return Result.Success();
+            return Result.Failure(ratingResult.Error);
         }
+
+        Result<Review> reviewResult = Review.Create(
+            booking,
+            ratingResult.Value,
+            new Comment(request.Comment),
+            _dateTimeProvider.UtcNow);
+
+        if (reviewResult.IsFailure)
+        {
+            return Result.Failure(reviewResult.Error);
+        }
+
+        _reviewRepository.Add(reviewResult.Value);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
     }
 }

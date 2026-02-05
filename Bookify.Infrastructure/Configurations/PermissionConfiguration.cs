@@ -2,17 +2,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Bookify.Infrastructure.Configurations
+namespace Bookify.Infrastructure.Configurations;
+
+internal sealed class PermissionConfiguration : IEntityTypeConfiguration<Permission>
 {
-    internal sealed class PermissionConfiguration : IEntityTypeConfiguration<Permission>
+    public void Configure(EntityTypeBuilder<Permission> builder)
     {
-        public void Configure(EntityTypeBuilder<Permission> builder)
-        {
-            builder.ToTable("permissions");
+        builder.ToTable("permissions");
 
-            builder.HasKey(permission => permission.Id);
+        builder.HasKey(permission => permission.Id);
 
-            builder.HasData(Permission.UsersRead);
-        }
+        builder.HasData(Permission.UsersRead);
     }
 }

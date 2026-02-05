@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bookify.Domain.Abstractions
+namespace Bookify.Domain.Abstractions;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-    }
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

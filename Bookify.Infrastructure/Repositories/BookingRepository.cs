@@ -5,36 +5,35 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bookify.Infrastructure.Repositories
+namespace Bookify.Infrastructure.Repositories;
+
+internal sealed class BookingRepository : Repository<Booking>, IBookingRepository
 {
-    internal sealed class BookingRepository : Repository<Booking>, IBookingRepository
+    private static readonly BookingStatus[] ActiveBookingStatuses =
     {
-        private static readonly BookingStatus[] ActiveBookingStatuses =
-        {
-            BookingStatus.Reserved,
-            BookingStatus.Confirmed,
-            BookingStatus.Completed
-        };
+        BookingStatus.Reserved,
+        BookingStatus.Confirmed,
+        BookingStatus.Completed
+    };
 
-        public BookingRepository(ApplicationDbContext context) 
-            : base(context)
-        {
-        }
+    public BookingRepository(ApplicationDbContext context) 
+        : base(context)
+    {
+    }
 
-        public async Task<bool> IsOverlappingAsync(
-            Apartment apartment,
-            DateRange duration, 
-            CancellationToken cancellationToken = default)
-        {
-            return await DbContext
-                .Set<Booking>()
-                .AnyAsync(
-                    booking =>
-                        booking.ApartmentId == apartment.Id &&
-                        booking.Duration.Start <= duration.End &&
-                        booking.Duration.End >= duration.Start &&
-                        ActiveBookingStatuses.Contains(booking.Status),
-                    cancellationToken);
-        }
+    public async Task<bool> IsOverlappingAsync(
+        Apartment apartment,
+        DateRange duration, 
+        CancellationToken cancellationToken = default)
+    {
+        return await DbContext
+            .Set<Booking>()
+            .AnyAsync(
+                booking =>
+                    booking.ApartmentId == apartment.Id &&
+                    booking.Duration.Start <= duration.End &&
+                    booking.Duration.End >= duration.Start &&
+                    ActiveBookingStatuses.Contains(booking.Status),
+                cancellationToken);
     }
 }

@@ -4,50 +4,49 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
 
-namespace Bookify.Application.Abstractions.Behaviours
+namespace Bookify.Application.Abstractions.Behaviours;
+
+public class LoggingBehaviour<TRequest, TResponse>
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IBaseRequest
+    where TResponse : Result
 {
-    public class LoggingBehaviour<TRequest, TResponse>
-        : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : IBaseRequest
-        where TResponse : Result
+    private readonly ILogger<TRequest> _logger;
+
+    public LoggingBehaviour(ILogger<TRequest> logger)
     {
-        private readonly ILogger<TRequest> _logger;
+        _logger = logger;
+    }
 
-        public LoggingBehaviour(ILogger<TRequest> logger)
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
+    {
+        var name = request.GetType().Name;
+
+        try
         {
-            _logger = logger;
+            _logger.LogInformation("Executing request {Request}", name);
+
+            TResponse result = await next();
+
+            if (result.IsSuccess)
+                _logger.LogInformation("Request {Request} processed successfully", name);
+            else
+                using (LogContext.PushProperty("Error", result.Error, true))
+                {
+                    _logger.LogError("Request {Request} processed with error", name);
+                }
+
+            return result;
+
         }
-
-        public async Task<TResponse> Handle(
-            TRequest request,
-            RequestHandlerDelegate<TResponse> next,
-            CancellationToken cancellationToken)
+        catch (Exception exception)
         {
-            var name = request.GetType().Name;
+            _logger.LogError(exception, "Request {Request} processing failed", name);
 
-            try
-            {
-                _logger.LogInformation("Executing request {Request}", name);
-
-                TResponse result = await next();
-
-                if (result.IsSuccess)
-                    _logger.LogInformation("Request {Request} processed successfully", name);
-                else
-                    using (LogContext.PushProperty("Error", result.Error, true))
-                    {
-                        _logger.LogError("Request {Request} processed with error", name);
-                    }
-
-                return result;
-
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Request {Request} processing failed", name);
-
-                throw;
-            }
+            throw;
         }
     }
 }

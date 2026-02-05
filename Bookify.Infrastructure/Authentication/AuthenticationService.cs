@@ -3,64 +3,63 @@ using Bookify.Domain.Users;
 using Bookify.Infrastructure.Authentication.Models;
 using System.Net.Http.Json;
 
-namespace Bookify.Infrastructure.Authentication
+namespace Bookify.Infrastructure.Authentication;
+
+internal sealed class AuthenticationService : IAuthenticationService
 {
-    internal sealed class AuthenticationService : IAuthenticationService
+    private const string PasswordCredentialType = "password";
+
+    private readonly HttpClient _httpClient;
+
+    public AuthenticationService(HttpClient httpClient)
     {
-        private const string PasswordCredentialType = "password";
+        _httpClient = httpClient;
+    }
 
-        private readonly HttpClient _httpClient;
+    public async Task<string> RegisterAsync(
+        User user,
+        string password,
+        CancellationToken cancellationToken = default)
+    {
+        UserRepresentationModel userRepresentationModel = UserRepresentationModel.FromUser(user);
 
-        public AuthenticationService(HttpClient httpClient)
+        userRepresentationModel.Credentials = new CredentialRepresentationModel[]
         {
-            _httpClient = httpClient;
+        new()
+        {
+            Value = password,
+            Temporary = false,
+            Type = PasswordCredentialType
+        }
+        };
+
+        HttpResponseMessage response = await _httpClient.PostAsJsonAsync(
+            "users",
+            userRepresentationModel,
+            cancellationToken);
+
+        return ExtractIdentityIdFromLocationHeader(response);
+    }
+
+    private static string ExtractIdentityIdFromLocationHeader(
+        HttpResponseMessage httpResponseMessage)
+    {
+        const string usersSegmentName = "users/";
+
+        var locationHeader = httpResponseMessage.Headers.Location?.PathAndQuery;
+
+        if (locationHeader is null)
+        {
+            throw new InvalidOperationException("Location header can't be null");
         }
 
-        public async Task<string> RegisterAsync(
-            User user,
-            string password,
-            CancellationToken cancellationToken = default)
-        {
-            UserRepresentationModel userRepresentationModel = UserRepresentationModel.FromUser(user);
+        var userSegmentValueIndex = locationHeader.IndexOf(
+            usersSegmentName,
+            StringComparison.InvariantCultureIgnoreCase);
 
-            userRepresentationModel.Credentials = new CredentialRepresentationModel[]
-            {
-            new()
-            {
-                Value = password,
-                Temporary = false,
-                Type = PasswordCredentialType
-            }
-            };
+        var userIdentityId = locationHeader.Substring(
+            userSegmentValueIndex + usersSegmentName.Length);
 
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(
-                "users",
-                userRepresentationModel,
-                cancellationToken);
-
-            return ExtractIdentityIdFromLocationHeader(response);
-        }
-
-        private static string ExtractIdentityIdFromLocationHeader(
-            HttpResponseMessage httpResponseMessage)
-        {
-            const string usersSegmentName = "users/";
-
-            var locationHeader = httpResponseMessage.Headers.Location?.PathAndQuery;
-
-            if (locationHeader is null)
-            {
-                throw new InvalidOperationException("Location header can't be null");
-            }
-
-            var userSegmentValueIndex = locationHeader.IndexOf(
-                usersSegmentName,
-                StringComparison.InvariantCultureIgnoreCase);
-
-            var userIdentityId = locationHeader.Substring(
-                userSegmentValueIndex + usersSegmentName.Length);
-
-            return userIdentityId;
-        }
+        return userIdentityId;
     }
 }

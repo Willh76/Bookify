@@ -3,13 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bookify.Application.Abstractions.Authentication
+namespace Bookify.Application.Abstractions.Authentication;
+
+public interface IJwtService
 {
-    public interface IJwtService
-    {
-        Task<Result<string>> GetAccessTokenAsync(
-            string email,
-            string password,
-            CancellationToken cancellationToken = default);
-    }
+    Task<Result<string>> GetAccessTokenAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken = default);
 }

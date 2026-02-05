@@ -15,6 +15,7 @@ using Bookify.Infrastructure.Caching;
 using Bookify.Infrastructure.Clock;
 using Bookify.Infrastructure.Data;
 using Bookify.Infrastructure.Email;
+using Bookify.Infrastructure.Outbox;
 using Bookify.Infrastructure.Repositories;
 using Dapper;
 using Microsoft.AspNetCore.Authentication;
@@ -24,137 +25,151 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Quartz;
 using AuthenticationOptions = Bookify.Infrastructure.Authentication.AuthenticationOptions;
 using AuthenticationService = Bookify.Infrastructure.Authentication.AuthenticationService;
 using IAuthenticationService = Bookify.Application.Abstractions.Authentication.IAuthenticationService;
 
-namespace Bookify.Infrastructure
+namespace Bookify.Infrastructure;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        public static IServiceCollection AddInfrastructure(
-            this IServiceCollection services,
-            IConfiguration configuration)
-        {
-            services.AddTransient<IDateTimeProvider, DateTimeProvider>();
+        services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 
-            services.AddTransient<IEmailService, EmailService>();
+        services.AddTransient<IEmailService, EmailService>();
 
-            AddPersistence(services, configuration);
+        AddPersistence(services, configuration);
 
-            AddAuthentication(services, configuration);
+        AddAuthentication(services, configuration);
 
-            AddAuthorization(services);
+        AddAuthorization(services);
 
-            AddCaching(services, configuration);
+        AddCaching(services, configuration);
 
-            AddHealthChecks(services, configuration);
+        AddHealthChecks(services, configuration);
 
-            AddApiVersioning(services);
+        AddApiVersioning(services);
 
-            return services;
-        }
+        AddBackgroundJobs(services, configuration);
 
-        private static void AddApiVersioning(IServiceCollection services)
-        {
-            services
-                .AddApiVersioning(options =>
-                {
-                    options.DefaultApiVersion = new ApiVersion(1);
-                    options.ReportApiVersions = true;
-                    options.ApiVersionReader = new UrlSegmentApiVersionReader();
-                })
-                .AddMvc()
-                .AddApiExplorer(options =>
-                {
-                    options.GroupNameFormat = "'v'V";
-                    options.SubstituteApiVersionInUrl = true;
-                });
-        }
-
-        private static void AddHealthChecks(IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddHealthChecks()
-                .AddNpgSql(configuration.GetConnectionString("Database")!)
-                .AddRedis(configuration.GetConnectionString("Cache")!)
-                .AddUrlGroup(new Uri(configuration["KeyCloak:BaseUrl"]!), HttpMethod.Get, "keycloak");
-        }
-
-        private static void AddCaching(IServiceCollection services, IConfiguration configuration)
-        {
-            var connectionString = configuration.GetConnectionString("Cache") ??
-                            throw new ArgumentNullException(nameof(configuration));
-
-            services.AddStackExchangeRedisCache(options => options.Configuration = connectionString);
-
-            services.AddSingleton<ICacheService, CacheService>();
-        }
-
-        private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
-        {
-            string connectionString = configuration.GetConnectionString("Database") ??
-                throw new ArgumentNullException(nameof(configuration));
-
-            services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseNpgsql(connectionString)
-                .UseSnakeCaseNamingConvention();
-            });
-
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IApartmentRepository, ApartmentRepository>();
-            services.AddScoped<IBookingRepository, BookingRepository>();
-
-            services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
-
-            services.AddSingleton<ISqlConnectionFactory>(_ => new SqlConnectionFactory(connectionString));
-
-            SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
-        }
-
-        private static void AddAuthorization(IServiceCollection services)
-        {
-            services.AddScoped<AuthorizationService>();
-
-            services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
-
-            services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
-
-            services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
-        }
-
-        private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
-        {
-            services
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer();
-
-            services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
-
-            services.ConfigureOptions<JwtBearerOptionsSetup>();
-
-            services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
-
-            services.AddTransient<AdminAuthorisationDelegatingHandler>();
-
-            services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpClient) =>
-            {
-                KeycloakOptions keyCloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
-
-                httpClient.BaseAddress = new Uri(keyCloakOptions.AdminUrl);
-            })
-                .AddHttpMessageHandler<AdminAuthorisationDelegatingHandler>();
-
-            services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpClient) =>
-            {
-                KeycloakOptions keyCloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
-
-                httpClient.BaseAddress = new Uri(keyCloakOptions.TokenUrl);
-            });
-
-            services.AddHttpContextAccessor();
-
-            services.AddScoped<IUserContext, UserContext>();
-        }
+        return services;
     }
+
+    private static void AddApiVersioning(IServiceCollection services)
+    {
+        services
+            .AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = new ApiVersion(1);
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            })
+            .AddMvc()
+            .AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'V";
+                options.SubstituteApiVersionInUrl = true;
+            });
+    }
+
+    private static void AddHealthChecks(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHealthChecks()
+            .AddNpgSql(configuration.GetConnectionString("Database")!)
+            .AddRedis(configuration.GetConnectionString("Cache")!)
+            .AddUrlGroup(new Uri(configuration["KeyCloak:BaseUrl"]!), HttpMethod.Get, "keycloak");
+    }
+
+    private static void AddCaching(IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("Cache") ??
+                        throw new ArgumentNullException(nameof(configuration));
+
+        services.AddStackExchangeRedisCache(options => options.Configuration = connectionString);
+
+        services.AddSingleton<ICacheService, CacheService>();
+    }
+
+    private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
+    {
+        string connectionString = configuration.GetConnectionString("Database") ??
+            throw new ArgumentNullException(nameof(configuration));
+
+        services.AddDbContext<ApplicationDbContext>(options =>
+        {
+            options.UseNpgsql(connectionString)
+            .UseSnakeCaseNamingConvention();
+        });
+
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IApartmentRepository, ApartmentRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
+        services.AddSingleton<ISqlConnectionFactory>(_ => new SqlConnectionFactory(connectionString));
+
+        SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+    }
+
+    private static void AddAuthorization(IServiceCollection services)
+    {
+        services.AddScoped<AuthorizationService>();
+
+        services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
+
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+    }
+
+    private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
+    {
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer();
+
+        services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
+
+        services.ConfigureOptions<JwtBearerOptionsSetup>();
+
+        services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
+
+        services.AddTransient<AdminAuthorisationDelegatingHandler>();
+
+        services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpClient) =>
+        {
+            KeycloakOptions keyCloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+
+            httpClient.BaseAddress = new Uri(keyCloakOptions.AdminUrl);
+        })
+            .AddHttpMessageHandler<AdminAuthorisationDelegatingHandler>();
+
+        services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpClient) =>
+        {
+            KeycloakOptions keyCloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+
+            httpClient.BaseAddress = new Uri(keyCloakOptions.TokenUrl);
+        });
+
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<IUserContext, UserContext>();
+    }
+
+    private static void AddBackgroundJobs(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<OutboxOptions>(configuration.GetSection("Outbox"));
+
+        services.AddQuartz();
+
+        services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+
+        services.ConfigureOptions<ProcessOutboxMessagesJobSetup>();
+    }
+
 }

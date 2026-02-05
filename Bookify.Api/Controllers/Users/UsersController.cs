@@ -8,66 +8,65 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Bookify.Api.Controllers.Users
+namespace Bookify.Api.Controllers.Users;
+
+[ApiController]
+[ApiVersion(ApiVersions.V1)]
+[Route("api/v{version:apiVersion}/user")]
+public class UsersController : ControllerBase
 {
-    [ApiController]
-    [ApiVersion(ApiVersions.V1)]
-    [Route("api/v{version:apiVersion}/user")]
-    public class UsersController : ControllerBase
+    private readonly ISender _sender;
+
+    public UsersController(ISender sender)
     {
-        private readonly ISender _sender;
+        _sender = sender;
+    }
 
-        public UsersController(ISender sender)
-        {
-            _sender = sender;
-        }
+    [AllowAnonymous]
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(
+        RegisterUserRequest request,
+        CancellationToken cancellationToken)
+    {
+        RegisterUserCommand command = new RegisterUserCommand(
+            request.Email,
+            request.FirstName,
+            request.Surname,
+            request.Password);
 
-        [AllowAnonymous]
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(
-            RegisterUserRequest request,
-            CancellationToken cancellationToken)
-        {
-            RegisterUserCommand command = new RegisterUserCommand(
-                request.Email,
-                request.FirstName,
-                request.Surname,
-                request.Password);
+        Result<Guid> result = await _sender.Send(command, cancellationToken);
 
-            Result<Guid> result = await _sender.Send(command, cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(result.Error);
 
-            if (result.IsFailure)
-                return BadRequest(result.Error);
+        return Ok(result.Value);
+    }
 
-            return Ok(result.Value);
-        }
+    [HttpGet("me")]
+    [MapToApiVersion(ApiVersions.V1)]
+    [HasPermission(Permissions.UsersRead)]
+    public async Task<IActionResult> GetLoggedInUser(CancellationToken cancellationToken)
+    {
+        var query = new GetLoggedInUserQuery();
 
-        [HttpGet("me")]
-        [MapToApiVersion(ApiVersions.V1)]
-        [HasPermission(Permissions.UsersRead)]
-        public async Task<IActionResult> GetLoggedInUser(CancellationToken cancellationToken)
-        {
-            var query = new GetLoggedInUserQuery();
+        Result<UserResponse> result = await _sender.Send(query, cancellationToken);
 
-            Result<UserResponse> result = await _sender.Send(query, cancellationToken);
+        return Ok(result.Value);
+    }
 
-            return Ok(result.Value);
-        }
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<IActionResult> LogIn(
+        LogInUserRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new LogInUserCommand(request.Email, request.Password);
 
-        [AllowAnonymous]
-        [HttpPost("login")]
-        public async Task<IActionResult> LogIn(
-            LogInUserRequest request,
-            CancellationToken cancellationToken)
-        {
-            var command = new LogInUserCommand(request.Email, request.Password);
+        Result<AccessTokenResponse> result = await _sender.Send(command, cancellationToken);
 
-            Result<AccessTokenResponse> result = await _sender.Send(command, cancellationToken);
+        if (result.IsFailure)
+            return Unauthorized(result.Error);
 
-            if (result.IsFailure)
-                return Unauthorized(result.Error);
-
-            return Ok(result.Value);
-        }
+        return Ok(result.Value);
     }
 }

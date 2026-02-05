@@ -3,48 +3,47 @@ using Bookify.Domain.Abstractions;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Bookify.Application.Abstractions.Behaviours
+namespace Bookify.Application.Abstractions.Behaviours;
+
+internal sealed class QueryCachingBehaviour<TRequest, TResponse>
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : ICachedQuery
+    where TResponse : Result
 {
-    internal sealed class QueryCachingBehaviour<TRequest, TResponse>
-        : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : ICachedQuery
-        where TResponse : Result
+    private readonly ICacheService _cacheService;
+    private readonly ILogger<QueryCachingBehaviour<TRequest, TResponse>> _logger;
+
+    public QueryCachingBehaviour(
+        ICacheService cacheService,
+        ILogger<QueryCachingBehaviour<TRequest, TResponse>> logger)
     {
-        private readonly ICacheService _cacheService;
-        private readonly ILogger<QueryCachingBehaviour<TRequest, TResponse>> _logger;
+        _cacheService = cacheService;
+        _logger = logger;
+    }
 
-        public QueryCachingBehaviour(
-            ICacheService cacheService,
-            ILogger<QueryCachingBehaviour<TRequest, TResponse>> logger)
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
+    {
+        TResponse? cachedResult = await _cacheService.GetAsync<TResponse>(
+            request.CacheKey,
+            cancellationToken);
+
+        string name = typeof(TRequest).Name;
+        if (cachedResult is not null)
         {
-            _cacheService = cacheService;
-            _logger = logger;
+            _logger.LogInformation("Cache hit for {Query}", name);
+            return cachedResult;
         }
 
-        public async Task<TResponse> Handle(
-            TRequest request,
-            RequestHandlerDelegate<TResponse> next,
-            CancellationToken cancellationToken)
-        {
-            TResponse? cachedResult = await _cacheService.GetAsync<TResponse>(
-                request.CacheKey,
-                cancellationToken);
+        _logger.LogInformation("Cache miss for {Query}", name);
 
-            string name = typeof(TRequest).Name;
-            if (cachedResult is not null)
-            {
-                _logger.LogInformation("Cache hit for {Query}", name);
-                return cachedResult;
-            }
+        TResponse result = await next();
 
-            _logger.LogInformation("Cache miss for {Query}", name);
+        if (result.IsSuccess)
+            await _cacheService.SetAsync(request.CacheKey, result, request.Expiration, cancellationToken);
 
-            TResponse result = await next();
-
-            if (result.IsSuccess)
-                await _cacheService.SetAsync(request.CacheKey, result, request.Expiration, cancellationToken);
-
-            return result;
-        }
+        return result;
     }
 }

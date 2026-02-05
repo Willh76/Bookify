@@ -1,8 +1,7 @@
-﻿namespace Bookify.Application.Abstractions.Authentication
+﻿namespace Bookify.Application.Abstractions.Authentication;
+
+public interface IUserContext
 {
-    public interface IUserContext
-    {
-        Guid UserId { get; }
-        string IdentityId { get; }
-    }
+    Guid UserId { get; }
+    string IdentityId { get; }
 }

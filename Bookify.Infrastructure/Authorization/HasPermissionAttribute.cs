@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace Bookify.Infrastructure.Authorization
+namespace Bookify.Infrastructure.Authorization;
+
+public sealed class HasPermissionAttribute : AuthorizeAttribute
 {
-    public sealed class HasPermissionAttribute : AuthorizeAttribute
+    public HasPermissionAttribute(string permission) 
+        : base(permission)
     {
-        public HasPermissionAttribute(string permission) 
-            : base(permission)
-        {
-        }
     }
 }

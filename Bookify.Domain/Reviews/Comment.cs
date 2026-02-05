@@ -1,4 +1,3 @@
-﻿namespace Bookify.Domain.Reviews
-{
-    public record Comment(string Value);
-}
+﻿namespace Bookify.Domain.Reviews;
+
+public record Comment(string Value);

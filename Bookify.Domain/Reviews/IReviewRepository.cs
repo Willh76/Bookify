@@ -1,7 +1,6 @@
-﻿namespace Bookify.Domain.Reviews
+﻿namespace Bookify.Domain.Reviews;
+
+public interface IReviewRepository
 {
-    public interface IReviewRepository
-    {
-        void Add(Review review);
-    }
+    void Add(Review review);
 }

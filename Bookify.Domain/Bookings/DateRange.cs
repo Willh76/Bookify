@@ -2,29 +2,28 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bookify.Domain.Bookings
+namespace Bookify.Domain.Bookings;
+
+public record DateRange
 {
-    public record DateRange
+    private DateRange()
     {
-        private DateRange()
+    }
+
+    public DateOnly Start { get; init; }
+    public DateOnly End { get; init; }
+
+    public int LengthInDays => End.DayNumber - Start.DayNumber;
+
+    public static DateRange Create(DateOnly start, DateOnly end)
+    {
+        if (start > end)
+            throw new ApplicationException("End date precedes start date");
+
+        return new DateRange
         {
-        }
-
-        public DateOnly Start { get; init; }
-        public DateOnly End { get; init; }
-
-        public int LengthInDays => End.DayNumber - Start.DayNumber;
-
-        public static DateRange Create(DateOnly start, DateOnly end)
-        {
-            if (start > end)
-                throw new ApplicationException("End date precedes start date");
-
-            return new DateRange
-            {
-                Start = start,
-                End = end
-            };
-        }
+            Start = start,
+            End = end
+        };
     }
 }

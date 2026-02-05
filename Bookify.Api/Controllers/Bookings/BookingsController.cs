@@ -6,47 +6,46 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Bookify.Api.Controllers.Bookings
+namespace Bookify.Api.Controllers.Bookings;
+
+[ApiController]
+[ApiVersion(ApiVersions.V1)]
+[Route("api/v{version:apiVersion}/bookings")]
+public class BookingsController : ControllerBase
 {
-    [ApiController]
-    [ApiVersion(ApiVersions.V1)]
-    [Route("api/v{version:apiVersion}/bookings")]
-    public class BookingsController : ControllerBase
+    private readonly ISender _sender;
+
+    public BookingsController(ISender sender)
     {
-        private readonly ISender _sender;
+        _sender = sender;
+    }
 
-        public BookingsController(ISender sender)
-        {
-            _sender = sender;
-        }
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetBooking(Guid id, CancellationToken cancellationToken)
+    {
+        GetBookingQuery query = new GetBookingQuery(id);
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetBooking(Guid id, CancellationToken cancellationToken)
-        {
-            GetBookingQuery query = new GetBookingQuery(id);
+        Result<BookingResponse> result = await _sender.Send(query, cancellationToken);
 
-            Result<BookingResponse> result = await _sender.Send(query, cancellationToken);
+        return result.IsSuccess ? Ok(result) : NotFound();
+    }
 
-            return result.IsSuccess ? Ok(result) : NotFound();
-        }
+    [HttpPost]
+    public async Task<IActionResult> ReserveBooking(
+        ReserveBookingRequest request,
+        CancellationToken cancellationToken)
+    {
+        ReserveBookingCommand command = new ReserveBookingCommand(
+            request.ApartmentId,
+            request.UserId,
+            request.StartDate,
+            request.EndDate);
 
-        [HttpPost]
-        public async Task<IActionResult> ReserveBooking(
-            ReserveBookingRequest request,
-            CancellationToken cancellationToken)
-        {
-            ReserveBookingCommand command = new ReserveBookingCommand(
-                request.ApartmentId,
-                request.UserId,
-                request.StartDate,
-                request.EndDate);
+        Result<Guid> result = await _sender.Send(command, cancellationToken);
 
-            Result<Guid> result = await _sender.Send(command, cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(result.Error);
 
-            if (result.IsFailure)
-                return BadRequest(result.Error);
-
-            return CreatedAtAction(nameof(GetBooking), new { id = result.Value }, result.Value);
-        }
+        return CreatedAtAction(nameof(GetBooking), new { id = result.Value }, result.Value);
     }
 }

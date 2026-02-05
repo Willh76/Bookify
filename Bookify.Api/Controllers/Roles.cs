@@ -1,13 +1,12 @@
-﻿namespace Bookify.Api.Controllers
-{
-    public static class Roles
-    {
-        public const string Registered = nameof(Registered);
-    }
+﻿namespace Bookify.Api.Controllers;
 
-    public static class ApiVersions
-    {
-        public const string V1 = "1";
-        public const string V2 = "2";
-    }
+public static class Roles
+{
+    public const string Registered = nameof(Registered);
+}
+
+public static class ApiVersions
+{
+    public const string V1 = "1";
+    public const string V2 = "2";
 }

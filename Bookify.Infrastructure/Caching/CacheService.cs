@@ -3,52 +3,51 @@ using Microsoft.Extensions.Caching.Distributed;
 using System.Buffers;
 using System.Text.Json;
 
-namespace Bookify.Infrastructure.Caching
+namespace Bookify.Infrastructure.Caching;
+
+internal sealed class CacheService : ICacheService
 {
-    internal sealed class CacheService : ICacheService
+    private readonly IDistributedCache _cache;
+
+    public async Task<T?> GetAsync<T>(
+        string key,
+        CancellationToken cancellationToken = default)
     {
-        private readonly IDistributedCache _cache;
+        byte[]? bytes = await _cache.GetAsync(key, cancellationToken);
 
-        public async Task<T?> GetAsync<T>(
-            string key,
-            CancellationToken cancellationToken = default)
-        {
-            byte[]? bytes = await _cache.GetAsync(key, cancellationToken);
+        return bytes is null ? default : Deserialize<T>(bytes);
+    }
 
-            return bytes is null ? default : Deserialize<T>(bytes);
-        }
+    public Task RemoveAsync(
+        string key,
+        CancellationToken cancellationToken = default)
+    {
+        return _cache.RemoveAsync(key, cancellationToken);
+    }
 
-        public Task RemoveAsync(
-            string key,
-            CancellationToken cancellationToken = default)
-        {
-            return _cache.RemoveAsync(key, cancellationToken);
-        }
+    public Task SetAsync<T>(string key,
+        T value,
+        TimeSpan? expiration = null,
+        CancellationToken cancellationToken = default)
+    {
+        byte[] bytes = Serialize(value);
 
-        public Task SetAsync<T>(string key,
-            T value,
-            TimeSpan? expiration = null,
-            CancellationToken cancellationToken = default)
-        {
-            byte[] bytes = Serialize(value);
+        return _cache.SetAsync(key, bytes, CacheOptions.Create(expiration), cancellationToken);
+    }
 
-            return _cache.SetAsync(key, bytes, CacheOptions.Create(expiration), cancellationToken);
-        }
+    private static byte[] Serialize<T>(T value)
+    {
+        ArrayBufferWriter<byte> buffer = new ArrayBufferWriter<byte>();
 
-        private static byte[] Serialize<T>(T value)
-        {
-            ArrayBufferWriter<byte> buffer = new ArrayBufferWriter<byte>();
+        using Utf8JsonWriter writer = new Utf8JsonWriter(buffer);
 
-            using Utf8JsonWriter writer = new Utf8JsonWriter(buffer);
+        JsonSerializer.Serialize(writer, value);
 
-            JsonSerializer.Serialize(writer, value);
+        return buffer.WrittenSpan.ToArray();
+    }
 
-            return buffer.WrittenSpan.ToArray();
-        }
-
-        private static T Deserialize<T>(byte[] bytes)
-        {
-            return JsonSerializer.Deserialize<T>(bytes)!;
-        }
+    private static T Deserialize<T>(byte[] bytes)
+    {
+        return JsonSerializer.Deserialize<T>(bytes)!;
     }
 }

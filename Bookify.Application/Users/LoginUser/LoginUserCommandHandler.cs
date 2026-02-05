@@ -6,30 +6,29 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bookify.Application.Users.LoginUser
+namespace Bookify.Application.Users.LoginUser;
+
+internal sealed class LoginUserCommandHandler : ICommandHandler<LogInUserCommand, AccessTokenResponse>
 {
-    internal sealed class LoginUserCommandHandler : ICommandHandler<LogInUserCommand, AccessTokenResponse>
+    private readonly IJwtService _jwtService;
+
+    public LoginUserCommandHandler(IJwtService jwtService)
     {
-        private readonly IJwtService _jwtService;
+        _jwtService = jwtService;
+    }
 
-        public LoginUserCommandHandler(IJwtService jwtService)
-        {
-            _jwtService = jwtService;
-        }
+    public async Task<Result<AccessTokenResponse>> Handle(
+        LogInUserCommand request,
+        CancellationToken cancellationToken)
+    {
+        Result<string> result = await _jwtService.GetAccessTokenAsync(
+            request.Email,
+            request.Password,
+            cancellationToken);
 
-        public async Task<Result<AccessTokenResponse>> Handle(
-            LogInUserCommand request,
-            CancellationToken cancellationToken)
-        {
-            Result<string> result = await _jwtService.GetAccessTokenAsync(
-                request.Email,
-                request.Password,
-                cancellationToken);
+        if (result.IsFailure)
+            return Result.Failure<AccessTokenResponse>(UserErrors.InvalidCredentials);
 
-            if (result.IsFailure)
-                return Result.Failure<AccessTokenResponse>(UserErrors.InvalidCredentials);
-
-            return new AccessTokenResponse(result.Value);
-        }
+        return new AccessTokenResponse(result.Value);
     }
 }
