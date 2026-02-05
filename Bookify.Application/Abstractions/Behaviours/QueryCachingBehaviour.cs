@@ -39,7 +39,7 @@ namespace Bookify.Application.Abstractions.Behaviours
 
             _logger.LogInformation("Cache miss for {Query}", name);
 
-            var result = await next();
+            TResponse result = await next();
 
             if (result.IsSuccess)
                 await _cacheService.SetAsync(request.CacheKey, result, request.Expiration, cancellationToken);

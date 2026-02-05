@@ -29,7 +29,7 @@ namespace Bookify.Application.Abstractions.Behaviours
             {
                 _logger.LogInformation("Executing request {Request}", name);
 
-                var result = await next();
+                TResponse result = await next();
 
                 if (result.IsSuccess)
                     _logger.LogInformation("Request {Request} processed successfully", name);

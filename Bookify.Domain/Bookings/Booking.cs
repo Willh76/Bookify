@@ -57,7 +57,7 @@ namespace Bookify.Domain.Bookings
             DateTime utcNow,
             PricingService pricingService)
         {
-            var pricingDetails = pricingService.CalculatePrice(apartment, duration);
+            PricingDetails pricingDetails = pricingService.CalculatePrice(apartment, duration);
 
             Booking booking = new Booking(
                 Guid.NewGuid(),

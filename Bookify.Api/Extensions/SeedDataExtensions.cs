@@ -2,6 +2,7 @@
 using Bookify.Application.Abstractions.Data;
 using Bookify.Domain.Apartments;
 using Dapper;
+using System.Data;
 
 namespace Bookify.Api.Extensions
 {
@@ -9,10 +10,10 @@ namespace Bookify.Api.Extensions
     {
         public static void SeedData(this IApplicationBuilder app)
         {
-            using var scope = app.ApplicationServices.CreateScope();
+            using IServiceScope scope = app.ApplicationServices.CreateScope();
 
-            var sqlConnectionFactory = scope.ServiceProvider.GetRequiredService<ISqlConnectionFactory>();
-            using var connection = sqlConnectionFactory.CreateConnection();
+            ISqlConnectionFactory sqlConnectionFactory = scope.ServiceProvider.GetRequiredService<ISqlConnectionFactory>();
+            using IDbConnection connection = sqlConnectionFactory.CreateConnection();
 
             Faker faker = new Faker();
 

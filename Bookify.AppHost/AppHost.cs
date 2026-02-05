@@ -1,6 +1,6 @@
-var builder = DistributedApplication.CreateBuilder(args);
+IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-var bookifyDb = builder.AddContainer("bookify-db", "postgres", "latest")
+IResourceBuilder<ContainerResource> bookifyDb = builder.AddContainer("bookify-db", "postgres", "latest")
     .WithEnvironment("POSTGRES_DB", "bookify")
     .WithEnvironment("POSTGRES_USER", "postgres")
     .WithEnvironment("POSTGRES_PASSWORD", "postgres")
@@ -11,7 +11,7 @@ var bookifyDb = builder.AddContainer("bookify-db", "postgres", "latest")
         targetPort: 5432
     );
 
-var bookifyApi = builder
+IResourceBuilder<ProjectResource> bookifyApi = builder
     .AddProject<Projects.Bookify_Api>("bookify-api")
     .WaitFor(bookifyDb)
 

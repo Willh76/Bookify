@@ -28,7 +28,7 @@ namespace Bookify.Api.Middleware
             {
                 _logger.LogError(exception, "Exception occured: {Message}", exception.Message);
 
-                var exceptionDetails = GetExceptionDetails(exception);
+                ExceptionDetails exceptionDetails = GetExceptionDetails(exception);
                 ProblemDetails problemDetails = new ProblemDetails
                 {
                     Status = exceptionDetails.Status,

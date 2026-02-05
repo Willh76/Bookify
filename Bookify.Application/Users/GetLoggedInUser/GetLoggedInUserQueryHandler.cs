@@ -3,6 +3,7 @@ using Bookify.Application.Abstractions.Data;
 using Bookify.Application.Abstractions.Messaging;
 using Bookify.Domain.Abstractions;
 using Dapper;
+using System.Data;
 
 namespace Bookify.Application.Users.GetLoggedInUser
 {
@@ -24,7 +25,7 @@ namespace Bookify.Application.Users.GetLoggedInUser
             GetLoggedInUserQuery request,
             CancellationToken cancellationToken)
         {
-            using var connection = _sqlConnectionFactory.CreateConnection();
+            using IDbConnection connection = _sqlConnectionFactory.CreateConnection();
 
             const string sql = """
             SELECT
@@ -36,7 +37,7 @@ namespace Bookify.Application.Users.GetLoggedInUser
             WHERE identity_id = @IdentityId
             """;
 
-            var user = await connection.QuerySingleAsync<UserResponse>(
+            UserResponse user = await connection.QuerySingleAsync<UserResponse>(
                 sql,
                 new
                 {

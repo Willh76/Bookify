@@ -58,7 +58,7 @@ namespace Bookify.Application.Apartments.SearchApartments
             )
             """;
 
-            var apartments = await connection
+            IEnumerable<ApartmentResponse> apartments = await connection
                 .QueryAsync<ApartmentResponse, AddressResponse, ApartmentResponse>(
                 sql,
                 (apartment, address) =>
